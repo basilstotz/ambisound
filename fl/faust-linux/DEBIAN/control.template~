@@ -1,0 +1,12 @@
+Source: faust-linux
+Section: unknown
+Priority: extra
+Maintainer: Basil Stotz <stotz@amxa.ch>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.2
+Package: faust-linux
+Architecture: amd64
+Version: %%version%% 
+Depends: build-essential,g++-multilib,pkg-config,git,libmicrohttpd-dev,libssl-dev,ncurses-dev,libsndfile-dev,libedit-dev,libcurl4-openssl-dev,vim-common,libgtk2.0-dev,libasound2-dev,libqrencode-dev,portaudio19-dev,libjack-jackd2-dev,libcsound64-dev,dssi-dev,lv2-dev,puredata-dev,supercollider-dev,libboost-dev,qtbase5-dev,qt5-qmake,libqt5x11extras5-dev,faust,qjackctl,liblo-tools,libresample1-dev,libresample1,llvm
+Description: a package to install faust compiler
+ a package to install faust compiler
