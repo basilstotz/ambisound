@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+//import { writeFileSync } from 'node:fs';
+
 let outer = {
   Name: "fdgdf",
   Description: "dfgdfg",
