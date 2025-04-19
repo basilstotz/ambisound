@@ -1,0 +1,4 @@
+S   =   8;  // Source number
+L   =   3;  // Maximum required degree $L$
+N   =  12;  // speaker number
+

@@ -4,7 +4,7 @@ function round(a){
     return Math.round(100*a)/100
 }
 
-function layoutToDsp(layout){
+function layoutToDSP(layout){
 
     //console.log(layout);
     let speakers = layout.LoudspeakerLayout.Loudspeakers;
@@ -27,9 +27,38 @@ function layoutToDsp(layout){
     return txt
 }
 
-function processInput(layout){   
-    process.stdout.write(layoutToDsp(layout));
+function layoutToOSC(layout){
+
+    //console.log(layout);
+    let speakers = layout.LoudspeakerLayout.Loudspeakers;
+    //console.log(speakers);
+    let style='';
+    let txt = '';
+    let N = speakers.length; 
+    txt+='N = '+N+';\n';
+    for(let i=0;i<N;i++){
+	let spk = speakers[i];
+	//txt+='speaker('+i+') = (nentry("v:speaker/h:'+i+'/x'+style+'",0,-50,50,0.1),nentry(\"v:speaker/h:'+i+'/y'+style+'",0,-50,50,0.1),nentry("v:speaker/h:'+i+'/z'+style+'",0,-50,50,0.1));\n';
+	txt+='speaker('+i+') = (nentry("'+i+'/x'+style+'",0,-50,50,0.1),nentry("'+i+'/y'+style+'",0,-50,50,0.1),nentry("'+i+'/z'+style+'",0,-50,50,0.1));\n';
+    }
+    return txt
 }
+
+
+
+function processInput(layout){
+    let txt;
+    if(osc){
+	txt=layoutToOSC(layout)
+    }else{
+	txt=layoutToDSP(layout)
+    }
+    process.stdout.write(txt);
+}
+
+
+let osc=false;
+if(process.argv[2])osc=true;
 
 var chunks = '';
 process.stdin.on('readable', () => {

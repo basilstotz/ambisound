@@ -63,20 +63,32 @@ declare options "[osc:on]";
 
 
 import("stdfaust.lib");
-import("ylm.lib");
-import("grids.lib");
-import("radial.lib");
-import("grids.lib");
+import("lib/ylm.lib");
+import("lib/grids.lib");
+import("lib/radial.lib");
+import("lib/grids.lib");
 
+//config
+import("order.cnf");
+import("sources.cnf");
+import("sinks.cnf");
+import("speakers.cnf");
+
+
+
+nfon = 1; // activate or not NF filters: `nfon=0` for no NF, `nfon=1` for NF.
+coord = 0; // Choice of coordinate system : 0 => Spherical, 1 => Cartesian,
+doppler = 1; // Possibility of Doppler effect : `0` => No, `1` => Yes.
+
+
+/*
 // COMPILATION PARAMETERS
 S   =   8;  // Source number
 L   =   3;  // Maximum required degree $L$
-N   =   16; // Loudspeaker number
-nfon = 1; // activate or not NF filters: `nfon=0` for no NF, `nfon=1` for NF.
-coord = 0; // Choice of coordinate system : 0 => Spherical, 1 => Cartesian,
-doppler = 0; // Possibility of Doppler effect : `0` => No, `1` => Yes.
+
 
 // Loudspeakers Cartesian coordinates $(x, y, z)$ in meters.
+N   =   16; // Loudspeaker number
 speaker(0) = (1.6, 2, 0);
 speaker(1) = (1.6, 1, 0);
 speaker(2) = (1.6, 0, 0);
@@ -99,7 +111,7 @@ speaker(18) = (-1.7, -1.7, 1.24);
 speaker(19) = (1.6, 2, -1);
 speaker(20) = (1.6, 0, -1);
 speaker(21) = (1.6, -2, -1);
-
+*/
 
 // DO NOT EDIT BELOW HERE
 rsmax = 50; // maximum radius
