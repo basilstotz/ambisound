@@ -1,0 +1,4 @@
+L = 3;   //ambisonics order
+S = 8;   //num sources
+N = 12; //num speakers
+

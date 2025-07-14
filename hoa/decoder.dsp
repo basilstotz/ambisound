@@ -1,0 +1,20 @@
+declare name "decoder";
+declare version "1.0";
+declare author "CICM";
+declare license "BSD";
+declare copyright "(c)CICM 2013";
+
+import("stdfaust.lib");
+
+import("ambi.cnf");
+
+//L=2;   //ambisonics order
+//S=8;   //num sources
+//N=12; //num speakers
+
+ot = nentry("optimation",3,1,3,1);
+//rt = hslider("rotate",0, ma.PI*(-1), ma.PI*1, 0.001);
+
+process =  ho.optimInPhase(L) : ho.decoder(L, N);
+
+//process(sig1, sig2, sig3, sig4) = ho.map(3, sig1, r1, a1), ho.map(3, sig2, r2, a2), ho.map(3, sig3, r3, a3), ho.map(3, sig4, r4, a4) :> 

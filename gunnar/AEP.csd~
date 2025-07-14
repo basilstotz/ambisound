@@ -1,0 +1,333 @@
+<CsoundSynthesizer>
+<CsOptions>
+-odac -iadc -+rtaudio=jack -+jack_client=Panner 
+</CsOptions>
+<CsInstruments>
+;sr      =  44100
+sr = 48000
+ksmps   =  64
+
+nchnls  =  12
+nchnls_i  = 10
+
+0dbfs    = 1
+
+gifactor init sr/ksmps
+
+gainput[] init 8
+
+gkvol_act[] fillarray -12, -12, -12, -12, -12, -12, -12, -12
+gkvol_delta[] fillarray 0, 0, 0, 0, 0, 0, 0, 0
+gkvol_end[] init 8
+
+gkmaster init 0
+
+#include "udos/AEP_udos.txt"
+#include "udos/ambisonics_utilities.txt"
+
+; xyz_to_aed *****************************************************
+         opcode xyz_to_aed,kkk,kkk
+kx,ky,kz xin
+     kt  taninv2 ky,kx
+     kt  degree kt
+     kpro = sqrt(kx*kx+ky*ky)
+     ka  taninv2 kz,kpro
+     ka degree ka
+     kd  dist kx,ky,kz
+     xout kt,ka,kd
+     endop
+
+;aep_channel **************************************************
+
+	 opcode aep_channel, aaaaaaaa,ak
+ain,kchannel xin
+
+
+kend table kchannel-1,10
+know timeinsts
+
+    ;get current
+    kindex = 3*(kchannel-1)
+kt table kindex,8
+ka table kindex+1,8
+kd table kindex+2,8
+
+if know<kend then ;update position
+
+    ;get rot
+    kdt table kindex,9
+    kda table kindex+1,9
+    kdd table kindex+2,9
+    
+    ;update pos
+    kt += kdt
+    ka += kda
+    kd += kdd
+
+/*
+    if kt > 2*$M_PI then
+        kt -= 2*$M_PI
+    endif
+    if kt < 0 then
+        kt += 2*$M_PI
+    endif
+*/
+    ;write new current
+    tablew kt,kindex,8
+    tablew ka,kindex+1,8
+    tablew kd,kindex+2,8
+endif
+
+kch = kchannel-1
+if know<gkvol_end[kch] then
+   gkvol_act[kch] = gkvol_act[kch]+gkvol_delta[kch]
+endif
+
+if kd<1.0 then
+   korder=3*kd
+else
+   korder=3
+endif
+
+kvv = db(gkmaster+gkvol_act[kchannel-1])
+
+a1,a2,a3,a4,a5,a6,a7,a8 AEP  ain*kvv,korder,17,kt,ka,kd
+	xout a1,a2,a3,a4,a5,a6,a7,a8
+	endop
+	
+; subwrite **************************************************
+
+opcode subwrite,0,ak
+ain, kchannel xin
+aout1,aout2,aout3,aout4,aout5,aout6,aout7,aout8 aep_channel ain,kchannel
+        zawm aout1,1
+	zawm aout2,2
+	zawm aout3,3
+	zawm aout4,4
+	zawm aout5,5
+	zawm aout6,6
+	zawm aout7,7
+	zawm aout8,8        
+	endop
+
+; sounouter **********************************************************
+
+opcode soundouter,0,0
+ao=0
+	outc ao,ao,ao,ao,zar(1),zar(2),zar(3),zar(4),zar(5),zar(6),zar(7),zar(8)
+	zacl 0,8
+        endop	
+
+; soundinner **********************************************************
+
+opcode soundinner,aaaaaaaa,0
+ain1,ain2,ain3,ain4,ain5,ain6,ain7,ain8 inch 3, 4, 5, 6, 7, 8, 9, 10
+;ain1	rand 1
+	xout ain1,ain2,ain3,ain4,ain5,ain6,ain7,ain8
+	endop
+
+
+;##############################################################	
+
+giPortHandle OSCinit 47120
+
+zakinit 8,8
+
+
+
+; input external
+instr 99
+      gainput[0],gainput[1],gainput[2],gainput[3],gainput[4],gainput[5],gainput[6],gainput[7] inch 3, 4, 5, 6, 7, 8, 9, 10
+;gainput[0] rand 1
+endin
+
+; panner
+instr 88
+;ain1,ain2,ain3,ain4,ain5,ain6,ain7,ain8 soundinner
+        subwrite gainput[0],1
+        subwrite gainput[1],2
+        subwrite gainput[2],3
+        subwrite gainput[3],4
+        subwrite gainput[4],5
+        subwrite gainput[5],6
+        subwrite gainput[6],7
+        subwrite gainput[7],8
+	soundouter
+endin
+
+
+; osc
+instr 2
+kchan init 0
+kt init 0
+ka init 0
+kd init 1
+kdur init 0
+kvol init 1.0
+
+ktrig init 1
+kcount init 0
+
+kGotIt OSClisten giPortHandle, "/gunnar/set","ifff",kchan,kt,ka,kd
+if kGotIt == 1 then
+   kindex = 3*(kchan-1)
+   tablew kt,kindex,8
+   tablew ka,kindex+1,8
+   tablew kd,kindex+2,8
+endif
+
+kGotIt OSClisten giPortHandle, "/gunnar/pos","iffff",kchan,kt,ka,kd,kdur
+if kGotIt == 1 then
+
+   ;kdt,kda,kdd update_rot kchan,kt,ka,kd,kdur
+
+
+   ;calc rotation
+   kindex = 3*(kchan-1)
+
+   kct table kindex,8
+   kca table kindex+1,8
+   kcd table kindex+2,8
+
+   kdt = (kt-kct)/(gifactor*kdur)
+   kda = (ka-kca)/(gifactor*kdur)
+   kdd = (kd-kcd)/(gifactor*kdur)
+   
+   tablew kdt,kindex,9
+   tablew kda,kindex+1,9
+   tablew kdd,kindex+2,9
+
+; write endtime to table 10
+   know timeinsts
+   kfut = know+kdur
+   tablew kfut,kchan-1,10
+
+
+   printf "position channel %i to %f %f %f in %f s\n",ktrig,kchan,kt,ka,kd,kdur
+   ;printf "delta    channel %i to %f %f %f in %f s\n",ktrig,kchan,kdt,kda,kdd,know
+   ktrig += 1
+endif
+   
+
+if kchan==1 then
+kcount +=1
+if kcount%1000 == 0 then
+   kindex=0
+   ;get curent pos
+   kct table kindex,8
+   kca table kindex+1,8
+   kcd table kindex+2,8
+
+   kfut table 0,10
+   know timeinsts
+
+   if kfut > know then
+   printf "instant channel %i is %f %f %f (vol= %f)\n",kcount,kchan,kct,kca,kcd,gkvol_act[0]
+   endif
+   
+endif
+endif
+
+
+kGotIt OSClisten giPortHandle, "/gunnar/vol","iff",kchan,kvol,kdur
+if kGotIt == 1 then
+   kindex = kchan-1
+
+   gkvol_delta[kindex] = (kvol-gkvol_act[kindex])/(gifactor*kdur)
+   
+; write endtime 
+   know timeinsts
+   gkvol_end[kindex] = know+kdur
+
+   printf "/gunnar/vol %i auf %f in %f s\n",ktrig,kchan,kvol,kdur
+   ktrig += 1
+endif
+
+Sfile init ""
+kGotIt OSClisten giPortHandle, "/gunnar/play","s",Sfile
+if kGotIt == 1 then
+  ktrig +=1
+  ;ilen filelen Sfile
+  String sprintfk {{i 101 0 -1 "%s"}},Sfile
+  println "play file %s",String
+  scoreline String,ktrig
+endif
+
+
+endin
+
+instr 101
+ilen filelen p4
+p3 = ilen
+gainput[4],gainput[5] diskin p4,1,0
+endin
+
+
+instr 102
+gainput[0] rand 1
+endin
+
+</CsInstruments>
+<CsScore>
+
+;fuction for speaker positions
+; GEN -2, parameters: max_speaker_distance, xs1,ys1,zs1,xs2,ys2,zs2,...
+;octahedron
+;f17 0 32 -2 1 1 0 0  -1 0 0  0 1 0  0 -1 0  0 0 1  0 0 -1
+;cube
+;f17 0 32 -2 1,732 1 1 1  1 1 -1  1 -1 1  -1 1 1
+;octagon
+;f17 0 32 -2 1 0.924 -0.383 0 0.924 0.383 0 0.383 0.924 0 -0.383 0.924 0
+;-0.924 0.383 0 -0.924 -0.383 0 -0.383 -0.924 0 0.383 -0.924 0
+;f17 0 32 -2  1  0 0 1  45 0 1  90 0 1  135 0 1  180 0 1  225 0 1  270 0 1  315 0 1
+;f17 0 32 -2 1 0 -90 1 0 -70 1 0 -50 1 0 -30 1 0 -10 1 0 10 1 0 30 1 0 50 1
+
+
+; soundpos
+f8 0 32 -2  0 0 1  10 0 1  20 0 1  30 0 1  40 0 1  50 0 1  60 0 1  70 0 1  0 0 0
+
+;soundrot
+f9 0 32 -2  0 0 0   0 0 0   0 0 0  0 0 0   0 0 0  0 0 0   0 0 0   0 0 0  0 0 0
+;endtime
+f10 0 32 -2   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+; speakerpos
+;square
+f17 0 32 -2 1   -45 0 1  45 0 1   135 0 1  225 0 1 -45 0 1  45 0 1   135 0 1  225 0 1
+;octagon
+;f17 0 32 -2 1  0 0 1  45 0 1  90 0 1  135 0 1  180 0 1  225 0 1  270 0 1  315 0 1
+
+
+
+i88 0 2000  ;panner
+i99 0 2000  ;analog in
+i2 0 2000   ;osc
+
+;i101 1 20 "JungfrauundMensch.mp3"
+;i100 2 2000
+i102 3 2000
+
+;i1 0 2000
+;i2 0 2000
+;i3 0 2000
+;i30 0 2000
+</CsScore>
+</CsoundSynthesizer>
+;example by martin neukom
+<bsbPanel>
+ <label>Widgets</label>
+ <objectName/>
+ <x>100</x>
+ <y>100</y>
+ <width>320</width>
+ <height>240</height>
+ <visible>true</visible>
+ <uuid/>
+ <bgcolor mode="background">
+  <r>240</r>
+  <g>240</g>
+  <b>240</b>
+ </bgcolor>
+</bsbPanel>
+<bsbPresets>
+</bsbPresets>

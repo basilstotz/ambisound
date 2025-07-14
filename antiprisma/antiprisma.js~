@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+let layout = {
+  "Name": "",
+  "Description": "",
+  "LoudspeakerLayout": {
+    "Name": "",
+    "Loudspeakers": [ ]
+  }
+};
+
+
+let n=5;
+let r=1;
+
+if(process.argv[2])n=process.argv[2];
+if(process.argv[3])r=process.argv[3];
+
+
+let h=Math.sqrt( (Math.cos(Math.PI/n)-Math.cos(2*Math.PI/n))/2.0);
+
+let speakers= layout.LoudspeakerLayout.Laudspeakers;
+
+console.log(layout.LoudspeakerLayout.Loudspeakers);
+
+for(let k=0;k<2*n;k++){
+    let x = Math.cos(k*Math.PI/n);
+    let y = Math.sin(k*Math.PI/n);
+    let z = Math.pow(-1,k)*h;
+
+    let radius = Math.sqrt(x*x+y*y+z*z);
+    let elevation = Math.atan2(z,Math.sqrt(x*x+y*y))*(180*Math.PI);
+    let azimuth = Math.atan2(y,x)*(180/Math.PI);
+
+    let speaker = {
+	    "Azimuth": azimuth,
+	    "Elevation": elevation,
+	    "Radius": radius,
+	    "IsImaginary": false,
+	    "Channel": k,
+	    "Gain": 1.0
+    };
+
+    layout.LoudspeakerLayout.Loudspeakers.push(speaker);
+}
+
+
+
+process.stdout.write(JSON.stringify(layout,null,2));
+

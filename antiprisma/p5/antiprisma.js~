@@ -1,0 +1,137 @@
+    
+function preload(){
+    head=loadModel('headstand.stl');
+
+}
+
+function kante(i,j){
+    let one=vertices[i];
+    let two=vertices[j];
+    line(one.x,one.y,one.z,two.x,two.y,two.z);
+}
+
+let t;
+let prisma;
+let vertices;
+let edges;
+let platon;
+
+let anti;
+let order;
+let radius;
+let stat;
+
+function setup(){
+
+    stat=createP('status:');
+    stat.position(620,80);
+
+    console.log(stat.elt.innerHTML);
+    order=createSlider(3,12,5,1);
+    order.position(620,20);
+    order.size(100);
+
+    radius=createSlider(100.0,1000.0,100.0,1);
+    radius.position(620,40);
+    radius.size(100);
+
+    anti=createCheckbox();
+    anti.position(620,60);
+    
+    createCanvas(600,600,WEBGL);
+
+    head.computeNormals();
+    prisma= new Prisma(5,true);
+    //prisma.setR=100;
+    console.log(prisma);
+    platon = new p5.Geometry();
+    platon.vertices=prisma.vertices;
+    platon.faces=prisma.faces;
+    platon.edges=prisma.edges;
+    //platon.computeNormals();
+    console.log(platon);
+}
+
+function draw(){
+
+    
+    if(anti.checked()!=prisma.anti)prisma.setAnti(anti.checked());
+    if(radius.value()!=prisma.r)prisma.setR(radius.value());
+    if(order.value!=prisma.n)prisma.setN(order.value());
+
+    stat.elt.innerHTML='status: '+prisma.n+' '+prisma.r+' '+prisma.anti;
+
+    vertices=prisma.vertices;
+    edges=prisma.edges;
+
+    
+    //let r=200;
+    //stroke(200);
+    //debugMode();
+    lights();
+    background(255);
+    orbitControl();
+    rotateX(PI/2,0);
+    //fill(0,255,0);
+    //stroke(255,0,0);
+    //model(icos);
+
+    stroke(200);
+    prisma.drawEdges();
+
+    stroke(255,0,0);
+    prisma.drawVertices();
+/*   
+    stroke(0);
+    for(let i=0;i<edges.length/2;i++){
+	let indA=edges[2*i];
+	let indB=edges[2*i+1];
+	let a=vertices[indA];
+	let b=vertices[indB];
+	stroke(200);
+	line(a.x,a.y,a.z,b.x,b.y,b.z);
+	
+    }
+   
+    //fill(255,0,0);
+    //normalMaterial();
+    for(let i=0;i<vertices.length;i++){
+	let v=vertices[i];
+	push();
+	switch(i){
+	case 0:
+	    stroke(255,0,0);
+	    break;
+	case 1:
+	    stroke(0,255,0);
+	    break;
+	case 2:
+	    stroke(0,0,255);
+	    break;
+	case 3:
+	    stroke(0);
+	    break;
+	default:
+	    noStroke();
+	    break;
+	}
+	stroke(255,0,0);	    
+	//if(frameCount<10)console.log(v,v.y,v.z);
+	translate(v.x,v.y,v.z);
+	sphere(5);
+	pop();
+    }
+
+*/
+    push();
+    fill(0,255,0);
+    //push();
+    //rotateZ();
+    push();
+    scale(0.3);
+    model(head);
+    pop();
+    //model(icos);
+    pop();
+}
+

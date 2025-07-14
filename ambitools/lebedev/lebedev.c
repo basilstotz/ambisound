@@ -1,0 +1,107 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <unistd.h>
+
+#include "sphere_lebedev_rule.h"
+
+#define NMAX 65
+#define MMAX ((NMAX*2+3)*(NMAX*2+3)/3)
+
+// https://people.math.sc.edu/Burkardt/c_src/sphere_lebedev_rule/sphere_lebedev_rule.html
+
+void help(){
+      printf("  usage: lebedev [options]\n");
+      printf("         writes coordinates and weights (of some) of the first\n");
+      printf("         65 lebedev grids of the unit sphere as json to stdout\n");
+      printf("         https://people.math.sc.edu/Burkardt/c_src/sphere_lebedev_rule/sphere_lebedev_rule.html\n");
+      printf("options: -h : this message\n");
+      printf("         -s : spherical coordinates [degrees] (default)\n");
+      printf("         -r : spherical coordinates [radians]\n");
+      printf("         -c : cartesian coordinates []\n");
+    }
+
+
+double deg2rad(double x){
+  return x*M_PI/180.0;
+}
+
+double rad2deg(double x){
+  return x*180.0/M_PI;
+}
+
+void lebedev(int cartesian,int radians){      
+
+  double x[MMAX];
+  double y[MMAX];
+  double z[MMAX];
+  double w[MMAX];
+
+  printf("lebedev = {\n");
+  for(int k=1;k<=NMAX;k++){
+    if(k!=1)printf(",\n");
+    int order=order_table(k);
+    printf("    \"%i\": [",order);
+	 if(available_table(k)==1){
+	   printf("\n");
+	     ld_by_order(order,x,y,z,w);
+	     for(int i=0;i<order;i++){
+	       if(i!=0)printf(",\n");
+	       if(cartesian){
+	          printf("        [ %f, %f, %f, %f ]",x[i],y[i],z[i],w[i]);
+	       }else{
+		 double t;   //longitude [-180,180] x-axis=0;
+		 double p;   //latitude [0,180]     zenith=0;
+		 double r=sqrt(x[i]*x[i]+y[i]*y[i]+z[i]*z[i]);
+		 xyz_to_tp(x[i],y[i],z[i],&t,&p);
+		 p=90-p;
+		 if(radians){
+		   t=deg2rad(t);
+		   p=deg2rad(p);
+		 }
+		 printf("        [ %f, %f, %f, %f ]",t,p,r,w[i]);  //lat: [-90,90] 90=zenith -90=nadir
+	       }
+	     }
+	     printf("\n    ]");
+	 }else{
+	   printf("     ]");
+	 }
+      }
+  printf("\n}\n");
+}
+
+
+void main(int argc, char **argv ){
+
+  int cartesian=0;
+  int radians=0;
+
+  int opt=0;
+  while((opt=getopt(argc,argv,"hcsr"))!=-1){
+      switch(opt){
+      case 'h':
+	help();
+	exit(0);
+	break;
+      case 'c':
+	cartesian=1;
+	break;
+      case 's':
+	radians=0;
+	//cartesian=0;
+	break;
+      case 'r':
+	radians=1;
+	//cartesian=0;
+	break;
+      default:
+	help();
+	exit(1);
+	break;
+      }
+  }
+
+  lebedev(cartesian,radians);
+  
+  exit(0);  
+}

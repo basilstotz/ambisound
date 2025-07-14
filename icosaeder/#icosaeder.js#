@@ -1,0 +1,195 @@
+
+
+
+
+let a;
+let c;
+
+let faces;
+let vertices;
+let edges;
+
+let icos;
+let head;
+let env;
+    
+function preload(){
+    head=loadModel('headstand.stl');
+
+}
+
+function kante(i,j){
+    let one=vertices[i];
+    let two=vertices[j];
+    line(one[0],one[1],one[2],two[0],two[1],two[2]);
+}
+
+let t;
+
+function setup(){
+    createCanvas(600,600,WEBGL);
+
+    head.computeNormals();
+
+// https://www.classes.cs.uchicago.edu/archive/2003/fall/23700/docs/handout-04.pdf
+    
+    t=(1+Math.sqrt(5))/2.0;
+
+    vertices = [
+	[t,1,0],
+	[-t,1,0],
+	[t,-1,0],
+	[-t,-1,0],
+
+	[1,0,t],
+	[1,0,-t],
+	[-1,0,t],
+	[-1,0,-t],
+
+	[0,t,1],
+	[0,-t,1],
+	[0,t,-1],
+	[0,-t,-1]
+    ];
+    
+    faces = [
+	[0,8,4],
+	[0,5,10],
+	[2,4,9],
+	[2,11,5],
+	[1,6,8],
+	[1,10,7],
+	[3,9,6],
+	[3,7,11],
+	[0,10,8],
+	[1,8,10],
+
+	[2,9,11],
+	[3,9,11],
+	[4,2,0],
+	[5,0,2],
+	[6,1,3],
+	[7,3,1],
+	[8,6,4],
+	[9,4,6],
+	[10,5,7],
+	[11,7,5]
+    ];
+
+    edges = [
+	//obere pyramide
+	[0,8],[0,4], [0,2] ,[0,5] ,[0,10],
+	[8,4],[4,2], [2,5] ,[5,10],[10,8],
+	//antiprisma (ohne rand)
+	[8,6],[4,6],[4,9],  [2,9] ,[2,11],
+	[5,11],[5,7],[10,7],[10,1],[8,1],
+	//untere pyramide
+	[1,6],[6,9], [9,11],[11,7],[7,1],
+	[1,3],[6,3], [9,3] ,[11,3],[7,3]
+    ];
+    
+
+
+    for(let i=0;i<vertices.length;i++){
+	v=vertices[i];
+	v[0]*=100;
+	v[1]*=100;
+	v[2]*=100;
+    }
+
+    console.log(vertices,faces,edges);
+    
+    icos= new p5.Geometry();
+    for(let i=0;i<12;i++){
+	let v=vertices[i];
+	icos.vertices.push(createVector(v[0],v[1],v[2]));
+    }
+    for(let i=0;i<20;i++){
+	icos.faces.push(faces[i]);
+    }
+    icos.computeNormals(FLAT);
+    //console.log(icos);
+
+    /*
+    beginGeometry();
+    fill(255,0,0);
+    //
+    for(let i=0;i<12;i++){
+	let v=vertices[i];
+	push();
+	scale(100);
+	//emissiveMaterial(0,255,0);
+	//stroke(0,0,255),
+	normalMaterial();
+	//fill(0,0,255);
+	translate(v.x,v.y,v.z);
+	let r=10;
+	if(i%4==0)r=20;
+	sphere(r);
+	pop();
+    }
+    env=endGeometry();
+    env.computeNormals();
+   */
+
+}
+
+function draw(){
+    //debugMode();
+    lights();
+    background(255);
+    orbitControl();
+    rotateX(PI/2,0);
+    //fill(0,255,0);
+    //stroke(255,0,0);
+    //model(icos);
+
+    stroke(200);
+    for(let i=0;i<edges.length;i++){
+	let e=edges[i];
+	kante(e[0],e[1]);
+    }
+    
+    //fill(255,0,0);
+    normalMaterial();
+    for(let i=0;i<vertices.length;i++){
+	let v=vertices[i];
+	push();
+	stroke(255,0,0);
+	//if(frameCount<10)console.log(v,v.y,v.z);
+	translate(v[0],v[1],v[2]);
+	sphere(5);
+	pop();
+    }
+
+    /*
+    stroke(0);
+    kante(0,1);
+    stroke(255,0,0);
+    kante(1,3);
+    stroke(0,255,0);
+    kante(3,2);
+    stroke(0,0,255);
+    kante(2,0);
+ 
+    kante(4,5);
+    kante(5,6);
+    kante(6,7);
+    kante(7,8);
+    kante(8,9);
+    kante(9,10);
+    kante(10,11);
+    kante(11,0);
+*/
+    push();
+    fill(0,255,0);
+    //push();
+    //rotateZ();
+    push();
+    scale(0.5);
+    model(head);
+    pop();
+    //model(icos);
+    pop();
+}
+
