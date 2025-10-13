@@ -159,6 +159,7 @@ aout0,aout1,aout2,aout3,aout4,aout5,aout6,aout7 aep_channel ain,kchannel
 	zawm aout7,7        
 	endop
 
+
 ; sounouter **********************************************************
 
 opcode soundouter,0,0

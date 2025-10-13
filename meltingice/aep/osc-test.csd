@@ -12,10 +12,10 @@ nchnls  = 0
 
 #include "udos/ambisonics_utilities.txt"
 
-giPort = 47140
-gSHost = "192.168.1.103"
+giPort = 47120
+gSHost = "192.168.87.180"
 
-giPortHandle OSCinit 9000
+giPortHandle OSCinit 10000
 
 
 instr 1
@@ -34,7 +34,7 @@ instr 1
    ktrigger = ktrigger + 1
    ;printf "%f %f\n",ktrigger,kxx,kyy
    printf "%f %f %f\n",ktrigger,kt,0,kd
-   OSCsend ktrigger, "192.168.1.103", 47120, "/gunnar/set", "ifff",1,kt,0.0,kd 
+   OSCsend ktrigger, gSHost, giPort, "/gunnar/set", "ifff",1,kt,0.0,kd 
 endif
 endin
 
@@ -51,18 +51,18 @@ i1 0 2000 ;start listening process first
 
 instr Pos
  kSendTrigger = 1
- OSCsend kSendTrigger, "192.168.1.103", 47120, "/gunnar/pos", "iffff",p4,p5,p6,p7,p3 
+ OSCsend kSendTrigger, gSHost, giPort, "/gunnar/pos", "iffff",p4,p5,p6,p7,p3 
 endin
 
 instr Vol
  kSendTrigger = 1
- OSCsend kSendTrigger, "192.168.1.103", 47120, "/gunnar/vol", "iff",p4,p5,p3 
+ OSCsend kSendTrigger, gSHost, giPort, "/gunnar/vol", "iff",p4,p5,p3 
 endin
 
 instr Play
  kSendTrigger = 1
  Sin = p4
  idur = p3
- OSCsend kSendTrigger, "192.168.1.103", 47120, "/gunnar/play", "s",Sin 
+ OSCsend kSendTrigger, gSHost, giPort, "/gunnar/play", "s",Sin 
 endin
 */
