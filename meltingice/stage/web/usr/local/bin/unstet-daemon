@@ -1,0 +1,4 @@
+#!/bin/sh
+cd /opt/unstet
+/usr/bin/node daemon.js
+exit

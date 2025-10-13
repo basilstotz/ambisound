@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Unclutter
+Comment=Hide Mouse
+Exec=unclutter
+Icon=computer
+Terminal=false
+Type=Application
+StartupNotify=false
+#StartupWMClass=x11vnc_port_prompt
+#Categories=Network;RemoteAccess;
+#Keywords=VNC;Server;Screencast
