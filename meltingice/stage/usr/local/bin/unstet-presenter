@@ -1,0 +1,2 @@
+#!/bin/sh
+chromium-browser --app=http://localhost:3000 --autoplay-policy=no-user-gesture-required --start-fullscreen

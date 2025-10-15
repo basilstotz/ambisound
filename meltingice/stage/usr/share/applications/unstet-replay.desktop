@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Unstet-Replay
+Comment=Unstet-Replay
+Exec=unstet-replay
+Terminal=false
+Type=Application
+Icon=unstet-player.png
+Categories=Video

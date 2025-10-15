@@ -19,7 +19,7 @@ gamix[] init 8
 
 gasubbass init 0
 
-gkvol_act[] fillarray -12, -12, -12, -12, -12, -12, -12, -12
+gkvol_act[] fillarray -18, -18, -18, -18, -18, -18, -18, -18
 gkvol_delta[] fillarray 0, 0, 0, 0, 0, 0, 0, 0
 gkvol_end[] init 8
 
@@ -110,10 +110,10 @@ opcode update_rot, 0, kkkkk
    ; write endtime to table 10
    know times
    kfut = know+kdur
-   println "gifactor %f",gifactor
-   println "know %f",know
-   println "kdur %f",kdur
-   println "kfut %f",kfut
+   ;println "gifactor %f",gifactor
+   ;println "know %f",know
+   ;println "kdur %f",kdur
+   ;println "kfut %f",kfut
    tablew kfut,kchan-1,10
 endop
 
@@ -138,7 +138,7 @@ else
    korder=5
 endif
 
-kkorr = 0.1 * (korder/5.0)*(1-0.1)
+kkorr = 0.05 * (korder/5.0)*(1-0.1)
 
 a1,a2,a3,a4,a5,a6,a7,a8 AEP  kkorr*ain,korder,17,kt,ka,kd
 	xout a1,a2,a3,a4,a5,a6,a7,a8
@@ -158,6 +158,7 @@ aout0,aout1,aout2,aout3,aout4,aout5,aout6,aout7 aep_channel ain,kchannel
 	zawm aout6,6
 	zawm aout7,7        
 	endop
+
 
 ; sounouter **********************************************************
 
@@ -181,6 +182,7 @@ ao=0
 opcode soundinner,aaaaaaaa,0
 ain1,ain2,ain3,ain4,ain5,ain6,ain7,ain8 inch 3, 4, 5, 6, 7, 8, 9, 10
 ;ain1	rand 1
+
 	xout ain1,ain2,ain3,ain4,ain5,ain6,ain7,ain8
 	endop
 
@@ -198,18 +200,24 @@ gkinstance init 0
 
 zakinit 8,8
 
+gSfilename init "sounds/100319-master.ogg"
+gksoundpos init 0
+
 
 ; ***************************input external****************************************************************
 instr 11
       gainput[0],gainput[1],gainput[2],gainput[3],gainput[4],gainput[5],gainput[6],gainput[7] inch 3, 4, 5, 6, 7, 8, 9, 10
-;gainput[0] rand 1
+;gainput[0]       oscils 1,440,0
+;gainput[1] rand 1
 endin
 
 ;**************************play soundfile*****************************************
-instr 15
+instr 12
 
 ilen filelen p4
-p3 = ilen
+;p3 = ilen
+
+
 
 ichn filenchnls  p4
 if ichn>4 then
@@ -226,7 +234,15 @@ while kindx<ic do
     kindx = kindx+1
 od
 
-soundtofile
+kduration timeinsts
+gksoundpos = kduration
+
+if kduration > ilen then
+   gksoundpos = 0
+   turnoff
+endif
+
+;soundtofile
 
 endin
 
@@ -277,7 +293,7 @@ instr 1
   update_rot p4,p5,p6,p7,p8
 endin
 
-; osc
+; osc %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 instr 2
 kchan init 0
 kt init 0
@@ -296,20 +312,22 @@ if kGotIt == 1 then
    tablew ka,kindex+1,8
    tablew kd,kindex+2,8
    ktrig = ktrig+1
-   printf "set channel %i to %f %f %f\n",ktrig,kchan,kt,ka,kd
+   ;printf "set channel %i to %f %f %f\n",ktrig,kchan,kt,ka,kd
 endif
 
-kGotIt OSClisten giPortHandle, "/gunnar/pos","iffff",kchan,kt,ka,kd,kdur
+kGotIt OSClisten giPortHandle, "/gunnar/pos","ifff",kchan,kt,ka,kd     ;,kdur
 if kGotIt == 1 then
-   println "kdur %f",kdur
+   ;println "kdur %f",kdur
 
-   update_rot kchan,kt,ka,kd,kdur
-
-   printf "position channel %i to %f %f %f in %f s\n",ktrig,kchan,kt,ka,kd,kdur
+   update_rot kchan,kt,ka,kd,0.05
+if kchan == 1 then
+   ;printf "position channel %i to %f %f %f in %f s\n",ktrig,kchan,kt,ka,kd,kdur
    ;printf "delta    channel %i to %f %f %f in %f s\n",ktrig,kchan,kdt,kda,kdd,know
+endif
    ktrig += 1
 endif
-   
+
+/*
 kGotIt OSClisten giPortHandle, "/gunnar/vol","iff",kchan,kvol,kdur
 if kGotIt == 1 then
    kindex = kchan-1
@@ -323,13 +341,42 @@ if kGotIt == 1 then
    printf "/gunnar/vol %i auf %f in %f s\n",ktrig,kchan,kvol,kdur
    ktrig += 1
 endif
+*/
+
+kGotIt OSClisten giPortHandle, "/gunnar/vol","if",kchan,kvol
+if kGotIt == 1 then
+   kindex = kchan-1
+   gkvol_act[kindex] = kvol
+
+/*
+   gkvol_delta[kindex] = (kvol-gkvol_act[kindex])/(gifactor*kdur)
+   
+; write endtime 
+   know times
+   gkvol_end[kindex] = know+kdur
+*/
+   printf "/gunnar/vol %i auf %f in %f s\n",ktrig,kchan,kvol,kdur
+   ktrig += 1
+endif
+
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Sfile init ""
-kGotIt OSClisten giPortHandle, "/gunnar/play","s",Sfile
+kGotIt OSClisten giPortHandle, "/gunnar/file","s",Sfile
+if kGotIt == 1 then
+  gSfilename strcpyk Sfile
+  println "file %s",gSfilename
+  println "lfile %s",Sfile
+endif
+
+kGotIt OSClisten giPortHandle, "/gunnar/play",""
 if kGotIt == 1 then
   ktrig +=1
   ;ilen filelen Sfile
-  String sprintfk {{i 15 0 1 "%s"}},Sfile
+String init ""
+  ;gksoundpos = 0;
+  String sprintfk {{i 12 0 -1 "%s"}},gSfilename
   println "play file %s",String
   scoreline String,ktrig
 endif
@@ -339,10 +386,21 @@ if kGotIt == 1 then
   ktrig +=1
   ;String sprintfk {{i -12 0 0}}
   println "stop file"
+  gksoundpos = 0
   ;turnoff 12
   scoreline "i -12.0 0 1",ktrig
-  
 endif
+
+kGotIt OSClisten giPortHandle, "/gunnar/pause",""
+if kGotIt == 1 then
+  ktrig +=1
+  ;String sprintfk {{i -12 0 0}}
+  println "pause file"
+  ;turnoff 12
+  scoreline "i -12.0 0 1",ktrig
+endif
+
+;%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 endin
 
@@ -360,7 +418,7 @@ instr 9
      kv6 = gkvol_act[5]
      ;ktrig changed kt5,kt6,kv5,kv6
      ;printf "%f %f  %f %f",ktrig,kt5,kv5,kt6,kv6
-     println "%f %f  %f %f  %f %f  %f",kt5,kv5,kt6,kv6,kfut,know,kdt
+     ;println "%f %f  %f %f  %f %f  %f",kt5,kv5,kt6,kv6,kfut,know,kdt
      //OSCsend ktrig, "192.168.1.112", 47130, "/status", "ffff",kt5,kv5,kt6,kv6
   endif
   kcount=kcount+1
@@ -391,25 +449,25 @@ f10 0 32 -2   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 ; speakerpos
 ;square
-;f17 0 32 -2 1   -45 0 1  45 0 1   135 0 1  225 0 1 -45 0 1  45 0 1   135 0 1  225 0 1
+f17 0 32 -2 1   -45 0 1  45 0 1   135 0 1  225 0 1 -45 0 1  45 0 1   135 0 1  225 0 1
 ;octagon
-f17 0 32 -2 1  0 0 1  45 0 1  90 0 1  135 0 1  180 0 1  225 0 1  270 0 1  315 0 1
+;f17 0 32 -2 1  0 0 1  45 0 1  90 0 1  135 0 1  180 0 1  225 0 1  270 0 1  315 0 1
 
 ;speaker volume
 f18 0 32 -2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 ;i1 0 1 4 6000 0 1 300
-i2 0 2000   ;osc
-i9 0 2000   ;print
+i2 0 20000   ;osc
+i9 0 20000   ;print
 
-i11 0 2000  ;analog in
-i18 0 2000  ;input volume
+i11 0 20000  ;analog in
+i18 0 20000  ;input volume
 
-i52 0 2000  ;subbass
-i53 0 2000  ;panner
+i52 0 20000  ;subbass
+i53 0 20000  ;panner
 
 ;i100 0 60 ;"ambitest.ogg"
-i101 0 2000 ;analog out
+i101 0 20000 ;analog out
 
 
 ;i15 0 1 "200119.aif"

@@ -1,0 +1,11 @@
+[Unit]
+Description=Unstet-Server
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/unstet-daemon
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

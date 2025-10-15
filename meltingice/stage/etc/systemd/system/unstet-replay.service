@@ -1,0 +1,11 @@
+[Unit]
+Description=Unstet-Replay
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/unstet-replay
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+while true; do
+    /usr/local/bin/oscfile /opt/unstet/rec/unstet.rec | /usr/local/bin/oscroute
+done
+
+exit 1
+
+
