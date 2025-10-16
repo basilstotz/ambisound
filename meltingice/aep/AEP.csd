@@ -246,6 +246,9 @@ endif
 
 endin
 
+
+
+
 ;******************************input volume***********************************************
 instr 18
     kidx=0
@@ -278,12 +281,14 @@ instr 53
 endin
 
 ; ***********************output*****************************************************
-; analog out
-instr 100
+instr 99
     soundtofile
 endin
 
+;instr 100
+;endin
 
+; analog out
 instr 101
     soundouter
 endin
@@ -292,6 +297,8 @@ instr 1
   p3 = 1
   update_rot p4,p5,p6,p7,p8
 endin
+
+ 
 
 ; osc %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 instr 2

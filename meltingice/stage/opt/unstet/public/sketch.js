@@ -10,9 +10,9 @@ let radius=[];
 
 let gui;
 
-function channel(x,y,w=100,h=100){
+function channel(x,y,w=180,h=180){
     let pan=createSlider2d("Pan 1",x,y,w,h,-5,5,-5,5);
-    let vol=createSliderV("Vol 1", x+w+10,y,w/4,h,-90,6);
+    let vol=createSliderV("Vol 1", x+w+10,y,w/4,h,-60,24);
     let rot=createSlider("Rot 1", x,y+h+10,w,h/4,-5,5);
     let button=createButton("0",x+w+10,y+h+10,25,25);
     vol.val=0
@@ -46,10 +46,10 @@ function setup() {
     let py=10
     for(let j=0;j<2;j++){
 	for(let i=0;i<4;i++){
-	    channels.push(channel(px+i*160,py+j*160));
+	    channels.push(channel(px+i*250,py+j*250));
 	}
     }
-    let off=py+2*160;
+    let off=py+2*250;
     play=createButton("Play",px,off,80,30);
     pause=createButton("Pause",px+90,off,80,30);
     stop=createButton("Stop",px+2*90,off,80,30);
@@ -131,11 +131,13 @@ function output(){
             osc.send(message);  
 	}   
     }
+   
     if(pause.isChanged && pause.isPressed){
 	let message = new OSC.Message('/gunnar/pause');
         osc.send(message);//console.log("PAUSE");
 	playState=-1;
-    }
+     }
+   
     if(play.isChanged && play.isPressed){
 	let message = new OSC.Message('/gunnar/play');
         osc.send(message);//console.log("paly");
@@ -154,8 +156,10 @@ function output(){
     stop.setStyle( {fillBgHover: color("#aaaaaa")});
     switch(playState){
     case -1:
+	
 	pause.setStyle( {fillBg: color("#ffaaaa")});
 	pause.setStyle( {fillBgHover: color("#ffaaaa")});
+
 	break;
     case 0:
 	stop.setStyle( {fillBg: color("#ffaaaa")});
