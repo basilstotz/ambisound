@@ -208,7 +208,7 @@ gksoundpos init 0
 instr 11
       gainput[0],gainput[1],gainput[2],gainput[3],gainput[4],gainput[5],gainput[6],gainput[7] inch 3, 4, 5, 6, 7, 8, 9, 10
 ;gainput[0]       oscils 1,440,0
-;gainput[1] rand 1
+gainput[7] pinker
 endin
 
 ;**************************play soundfile*****************************************
